@@ -1,0 +1,141 @@
+---
+title: "클러스터링 2차"
+output: html_document
+date: "2023-07-06"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# 라이브러리 생성
+library(dplyr)
+library(data.table)
+library(readr)
+
+# 데이터 load
+dat <- read_csv('PCA데이터셋.csv',
+                locale = locale('ko', encoding = 'cp949'))
+```
+
+```{r}
+dat %>% head()
+```
+```{r}
+dat %>% names()
+```
+
+```{r}
+# pca score
+dat2 = data.frame(dat)
+dat2 = dat2[, c("장애인콜택시도착건수", "장애인인구비율" , "급속충전소수")]
+head(dat2)
+```
+
+```{r}
+# pca 계수 확인
+pca_obj <- prcomp(dat2,scale = TRUE,center = TRUE)
+pca_obj
+
+# pc1의 분산 확인
+summary(pca_obj)
+```
+"장애인콜택시도착건수", "장애인인구비율" , "급속충전소수"
+```{r}
+장애인콜택시도착건수.s = scale(dat$장애인콜택시도착건수, scale = T, center = T)
+ 장애인인구비율.s = scale(dat$장애인인구비율, scale = T, center = T)
+ 급속충전소수.s = scale(dat$급속충전소수, scale = T, center = T)
+```
+
+```{r}
+# var1,var2,var3,var4
+score = 0.5986310*장애인콜택시도착건수.s +
+  0.5800947*장애인인구비율.s +
+  0.5523867*급속충전소수.s
+
+dat["PCA_SCORE"] = score
+
+names(dat)
+```
+
+```{r}
+group = dat[,c("행정동","장애인콜택시도착건수","장애인인구비율","급속충전소수",
+               "cluster","PCA_SCORE")]
+
+# scale 기준
+result = merge(x = "행정동", y = group, all.x = T)
+
+names(result)
+```
+
+
+```{r}
+final2 = result[result$cluster == 2,]
+final2 = arrange(final2, desc(PCA_SCORE))
+final2 %>% head(10)
+```
+
+```{r}
+nor_minmax = function(x){
+  result = (x - min(x))/(max(x) - min(x))
+  return(result)
+}
+```
+
+```{r}
+options("scipen" = 100)
+final2['점수'] = nor_minmax(final2$PCA_SCORE)*100
+
+final2 = final2[c("x","행정동","장애인콜택시도착건수", "장애인인구비율","급속충전소수",
+                "cluster","PCA_SCORE" ,"점수")]
+
+plot(y = final2$점수[1:10],x = 1:10, type = 'o',xlab = '')
+
+final2
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
